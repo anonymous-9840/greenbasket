@@ -58,14 +58,24 @@ npm run dev
 - **Frontend (Vite + React + Three.js)**: `http://localhost:5173`
 - **Backend API (Express + Mongoose/Persistent Datastore)**: `http://localhost:5000`
 
+### Deploying to Vercel
+
+Vercel serves the frontend as static files and runs the Express API through `api/[...path].js`.
+The function starts with the bundled `server/data/greenbasket_db.json`, so product listings work
+without a separately hosted API server. Set `MONGODB_URI` in Vercel Project Settings to persist
+admin changes, orders, and account data across serverless cold starts. Without it, API writes last
+only for the lifetime of a warm function instance.
+
 ---
 
-## 🔑 Demo Accounts (1-Click Login Available on `/auth` and `/admin`)
+## 🔑 Demo Accounts
 
-| Role | Email / Phone | Password |
+| Role | Login ID |
 | :--- | :--- | :--- |
-| **Customer** | `arjun@example.com` or `+919811122233` | `Customer@123` |
-| **Administrator** | `admin@greenbasket.in` or `+919876543210` | `Admin@123` |
+| **Customer** | `arjun@example.com` or `+919811122233` |
+| **Administrator** | `admin` |
+
+The administrator password is `admin@123`.
 
 ---
 

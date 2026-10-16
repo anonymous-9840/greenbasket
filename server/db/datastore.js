@@ -24,7 +24,9 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, '..', 'data');
+const SOURCE_DATA_DIR = path.join(__dirname, '..', 'data');
+const SOURCE_DB_FILE = path.join(SOURCE_DATA_DIR, 'greenbasket_db.json');
+const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'greenbasket-data') : SOURCE_DATA_DIR;
 const DB_FILE = path.join(DATA_DIR, 'greenbasket_db.json');
 
 let mongoConnected = false;
@@ -96,6 +98,10 @@ class DataStore {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
 
+    if (process.env.VERCEL && !fs.existsSync(DB_FILE) && fs.existsSync(SOURCE_DB_FILE)) {
+      fs.copyFileSync(SOURCE_DB_FILE, DB_FILE);
+    }
+
     if (fs.existsSync(DB_FILE)) {
       try {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
@@ -131,7 +137,9 @@ class DataStore {
       this.resetToSeed();
     }
 
-    // Attempt connection to MongoDB if running
+    // Keep Vercel's serverless runtime on the packaged data unless persistent MongoDB is configured.
+    if (process.env.VERCEL && !process.env.MONGODB_URI) return;
+
     const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/greenbasket';
     try {
       await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 1800 });

@@ -16,6 +16,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'green_basket_dev_secret_key_2026';
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
+const dbInitialization = db.init();
+app.use('/api', (_req, _res, next) => {
+  dbInitialization.then(() => next()).catch(next);
+});
+
 // In-memory OTP store for email/phone verification & password recovery
 const otpStore = new Map();
 
@@ -1469,8 +1474,11 @@ app.put('/api/admin/pincodes/:pincode', authenticate, requireAdmin, (req, res) =
   res.json({ pinCode: pinObj, message: `PIN code ${pinObj.pincode} updated.` });
 });
 
-// Start Server
-await db.init();
-app.listen(PORT, () => {
-  console.log(`🌿 Green Basket API Server running on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  await dbInitialization;
+  app.listen(PORT, () => {
+    console.log(`🌿 Green Basket API Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
